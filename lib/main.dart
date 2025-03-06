@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart' as carousel; // Sử dụng alias cho carousel_slider
+import 'package:carousel_slider/carousel_slider.dart' as carousel;
+import 'package:flutter_application_app/about_page.dart';
+import 'package:flutter_application_app/blog_page.dart';
+import 'package:flutter_application_app/cart_page.dart';
+import 'package:flutter_application_app/checkout_page.dart';
+import 'package:flutter_application_app/contact_page.dart';
+import 'package:flutter_application_app/login_page.dart';
+import 'package:flutter_application_app/products_page.dart';
+import 'package:flutter_application_app/signup_page.dart';
 
 void main() {
   runApp(LiquorStoreApp());
@@ -14,21 +22,107 @@ class LiquorStoreApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Spectral',
       ),
-      home: HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/about': (context) => AboutPage(),
+        '/products': (context) => ProductsPage(),
+        '/blog': (context) => BlogPage(),
+        '/contact': (context) => ContactPage(),
+        '/cart': (context) => CartPage(),
+        '/checkout': (context) => CheckoutPage(),
+        '/login': (context) => LoginPage(),
+        '/signup': (context) => SignupPage(),
+      },
+    );
+  }
+}
+
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  @override
+  Size get preferredSize => Size.fromHeight(60); // Standard AppBar height
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.black87,
+      title: Text(
+        'Liquor Store',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      actions: [
+        Stack(
+          children: [
+            IconButton(
+              icon: Icon(Icons.shopping_cart, color: Colors.white),
+              onPressed: () => _showCartBottomSheet(context),
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                child: Text(
+                  '3',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+        IconButton(
+          icon: Icon(Icons.menu, color: Colors.white),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+      ],
+    );
+  }
+
+  void _showCartBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16),
+        height: 300,
+        child: Column(
+          children: [
+            Text('Your Cart', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildCartItem('Bacardi 151', '\$25.99', 'images/prod-1.jpg'),
+                  _buildCartItem('Jim Beam Kentucky Straight', '\$30.89', 'images/prod-2.jpg'),
+                  _buildCartItem('Citadelle', '\$22.50', 'images/prod-3.jpg'),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/cart'),
+              child: Text('View Cart'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartItem(String name, String price, String imagePath) {
+    return ListTile(
+      leading: Image.asset(imagePath, width: 50, height: 50, fit: BoxFit.cover),
+      title: Text(name),
+      subtitle: Text(price),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
-  final List<String> liquorCategories = [
-    'Brandy',
-    'Gin',
-    'Rum',
-    'Tequila',
-    'Vodka',
-    'Whiskey',
-  ];
-
+  final List<String> liquorCategories = ['Brandy', 'Gin', 'Rum', 'Tequila', 'Vodka', 'Whiskey'];
   final List<Map<String, String>> testimonials = [
     {
       'name': 'Roger Scott',
@@ -53,228 +147,200 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppBar(),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.black87),
+              child: Text(
+                'Liquor Store',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () => Navigator.pushNamed(context, '/'),
+            ),
+            ListTile(
+              leading: Icon(Icons.info),
+              title: Text('About'),
+              onTap: () => Navigator.pushNamed(context, '/about'),
+            ),
+            ListTile(
+              leading: Icon(Icons.local_drink),
+              title: Text('Products'),
+              onTap: () => Navigator.pushNamed(context, '/products'),
+            ),
+            ListTile(
+              leading: Icon(Icons.article),
+              title: Text('Blog'),
+              onTap: () => Navigator.pushNamed(context, '/blog'),
+            ),
+            ListTile(
+              leading: Icon(Icons.contact_mail),
+              title: Text('Contact'),
+              onTap: () => Navigator.pushNamed(context, '/contact'),
+            ),
+            ListTile(
+              leading: Icon(Icons.login),
+              title: Text('Login'),
+              onTap: () => Navigator.pushNamed(context, '/login'),
+            ),
+            ListTile(
+              leading: Icon(Icons.person_add),
+              title: Text('Sign Up'),
+              onTap: () => Navigator.pushNamed(context, '/signup'),
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hero Section
             Container(
-              height: 500,
+              height: 250,
+              width: double.infinity,
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('images/bg_2.jpg'),
                   fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.5),
-                    BlendMode.dstATop,
-                  ),
+                  colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.dstATop),
                 ),
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Good Drink for Good Moments.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 48,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), backgroundColor: Colors.blue,
-                          ),
-                          child: Text('Shop Now', style: TextStyle(color: Colors.white)),
-                        ),
-                        SizedBox(width: 10),
-                        OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            side: BorderSide(color: Colors.white),
-                          ),
-                          child: Text('Read More', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Good Drink for Good Moments',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/products'),
+                    child: Text('Shop Now'),
+                  ),
+                ],
               ),
             ),
 
             // Intro Section
-            Container(
-              padding: EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
                 children: [
                   _buildIntroCard(
                     icon: Icons.support_agent,
                     title: 'Online Support 24/7',
-                    description: 'A small river named Duden flows by their place and supplies it with the necessary regelialia.',
+                    description: 'Support whenever you need it.',
                   ),
                   _buildIntroCard(
                     icon: Icons.money,
                     title: 'Money Back Guarantee',
-                    description: 'A small river named Duden flows by their place and supplies it with the necessary regelialia.',
+                    description: 'Risk-free shopping.',
                   ),
                   _buildIntroCard(
                     icon: Icons.local_shipping,
                     title: 'Free Shipping & Return',
-                    description: 'A small river named Duden flows by their place and supplies it with the necessary regelialia.',
+                    description: 'Hassle-free delivery.',
                   ),
                 ],
               ),
             ),
 
-            // About Section
-            Container(
-              padding: EdgeInsets.all(20),
-              child: Row(
+            // Categories Section
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Container(
-                      height: 400,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('images/about.jpg'),
-                          fit: BoxFit.cover,
+                  Text('Categories', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: liquorCategories.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 2,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset('images/kind-${index + 1}.jpg', height: 80, fit: BoxFit.cover),
+                            SizedBox(height: 8),
+                            Text(liquorCategories[index], style: TextStyle(fontSize: 16)),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Since 1905', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                          SizedBox(height: 10),
-                          Text(
-                            'Desire Meets A New Taste',
-                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            'A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth.',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            '115 Years of Experience In Business',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ],
-              ),
-            ),
-
-            // Liquor Categories
-            Container(
-              padding: EdgeInsets.all(20),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 6,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: liquorCategories.length,
-                itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      Container(
-                        height: 100,
-                        width: 100,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('images/kind-${index + 1}.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(liquorCategories[index], style: TextStyle(fontSize: 18)),
-                    ],
-                  );
-                },
               ),
             ),
 
             // Testimonial Section
             Container(
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('images/bg_4.jpg'),
                   fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.5),
-                    BlendMode.dstATop,
-                  ),
+                  colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.dstATop),
                 ),
               ),
-              padding: EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Text('Testimonial', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  Text('Testimonials', style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
-                  Text('Happy Clients', style: TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  carousel.CarouselSlider( // Sử dụng alias 'carousel'
+                  carousel.CarouselSlider(
                     options: carousel.CarouselOptions(
-                      height: 300,
+                      height: 200,
                       autoPlay: true,
                       enlargeCenterPage: true,
                     ),
                     items: testimonials.map((testimonial) {
                       return Builder(
                         builder: (BuildContext context) {
-                          return Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Icons.format_quote, size: 40),
-                                SizedBox(height: 10),
-                                Text(
-                                  testimonial['text']!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: AssetImage(testimonial['image']!),
-                                      radius: 30,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(testimonial['name']!, style: TextStyle(fontWeight: FontWeight.bold)),
-                                        Text(testimonial['position']!, style: TextStyle(color: Colors.grey)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
+                          return Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    testimonial['text']!,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundImage: AssetImage(testimonial['image']!),
+                                        radius: 20,
+                                      ),
+                                      SizedBox(width: 10),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(testimonial['name']!, style: TextStyle(fontWeight: FontWeight.bold)),
+                                          Text(testimonial['position']!, style: TextStyle(color: Colors.grey)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -286,37 +352,23 @@ class HomePage extends StatelessWidget {
             ),
 
             // Blog Section
-            Container(
-              padding: EdgeInsets.all(20),
+            Padding(
+              padding: EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Blog', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text('Recent Blog', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
-                  Text('Recent Blog', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  GridView.count(
+                  ListView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                    children: List.generate(4, (index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5)],
-                        ),
+                    itemCount: 4,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        margin: EdgeInsets.only(bottom: 10),
                         child: Row(
                           children: [
-                            Container(
-                              width: 150,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage('images/image_${index + 1}.jpg'),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
+                            Image.asset('images/image_${index + 1}.jpg', width: 100, height: 100, fit: BoxFit.cover),
                             Expanded(
                               child: Padding(
                                 padding: EdgeInsets.all(10),
@@ -324,27 +376,13 @@ class HomePage extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('23 April 2020', style: TextStyle(color: Colors.grey)),
-                                    SizedBox(height: 10),
+                                    SizedBox(height: 5),
                                     Text(
                                       'The Recipe from a Winemaker’s Restaurant',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                     ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      'A small river named Duden flows by their place and supplies it with the necessary regelialia.',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                    SizedBox(height: 10),
-                                    TextButton(
-                                      onPressed: () {},
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text('Continue'),
-                                          Icon(Icons.arrow_right),
-                                        ],
-                                      ),
-                                    ),
+                                    SizedBox(height: 5),
+                                    Text('A small river named Duden flows...', style: TextStyle(fontSize: 14)),
                                   ],
                                 ),
                               ),
@@ -352,7 +390,7 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                       );
-                    }),
+                    },
                   ),
                 ],
               ),
@@ -360,20 +398,33 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, '/cart'),
+        child: Icon(Icons.shopping_cart),
+        backgroundColor: Colors.blue,
+      ),
     );
   }
 
   Widget _buildIntroCard({required IconData icon, required String title, required String description}) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Row(
           children: [
-            Icon(icon, size: 40, color: Colors.blue),
-            SizedBox(height: 10),
-            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text(description, textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+            Icon(icon, size: 30, color: Colors.blue),
+            SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 5),
+                  Text(description, style: TextStyle(fontSize: 14)),
+                ],
+              ),
+            ),
           ],
         ),
       ),

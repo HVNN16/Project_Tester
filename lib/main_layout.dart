@@ -86,9 +86,8 @@ class _MainLayoutState extends State<MainLayout> {
             Expanded(
               child: ListView(
                 children: [
-                  _buildCartItem('Bacardi 151', '\$25.99', 'images/prod-1.jpg'),
-                  _buildCartItem('Jim Beam Kentucky Straight', '\$30.89', 'images/prod-2.jpg'),
-                  _buildCartItem('Citadelle', '\$22.50', 'images/prod-3.jpg'),
+                  _buildCartItem("Hello Team Tester 2","ĐẠI HỌC ĐÔNG Á <3","2025"),
+                 
                 ],
               ),
             ),

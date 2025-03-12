@@ -1,33 +1,145 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_app/models/cart.dart';
+import 'package:flutter_application_app/services/cart_service.dart';
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
+  @override
+  _CartPageState createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  late Future<Cart> futureCart;
+  final CartService cartService = CartService();
+
+  @override
+  void initState() {
+    super.initState();
+    futureCart = cartService.getCart();
+  }
+
+  void refreshCart() {
+    setState(() {
+      futureCart = cartService.getCart();
+    });
+  }
+
+  void updateQuantity(String productId, int newQuantity) async {
+    try {
+      await cartService.updateQuantity(productId, newQuantity);
+      refreshCart();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update quantity: $e')),
+      );
+    }
+  }
+
+  void removeFromCart(String productId) async {
+    try {
+      await cartService.removeFromCart(productId);
+      refreshCart();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Product removed from cart')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to remove from cart: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.all(16),
-      children: [
-        Text(
-          'Your Cart',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 20),
-        ListTile(
-          leading: Image.asset('images/prod-1.jpg', width: 50, height: 50, fit: BoxFit.cover),
-          title: Text('Bacardi 151'),
-          subtitle: Text('\$25.99'),
-          trailing: IconButton(icon: Icon(Icons.delete), onPressed: () {}),
-        ),
-        ListTile(
-          leading: Image.asset('images/prod-2.jpg', width: 50, height: 50, fit: BoxFit.cover),
-          title: Text('Jim Beam Kentucky Straight'),
-          subtitle: Text('\$30.89'),
-          trailing: IconButton(icon: Icon(Icons.delete), onPressed: () {}),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pushNamed(context, '/checkout'),
-          child: Text('Checkout'),
-        ),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Your Cart'),
+      ),
+      body: FutureBuilder<Cart>(
+        future: futureCart,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final cart = snapshot.data!;
+            return ListView(
+              padding: EdgeInsets.all(16),
+              children: [
+                Text(
+                  'Your Cart',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                if (cart.items.isEmpty)
+                  Center(child: Text('Your cart is empty')),
+                ...cart.items.map((item) {
+                  return Card(
+                    elevation: 2,
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: Image.network(
+                          item.image,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: Icon(Icons.broken_image),
+                            );
+                          },
+                        ),
+                      ),
+                      title: Text(item.name),
+                      subtitle: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('\$${item.price.toStringAsFixed(2)}'),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.remove),
+                                onPressed: item.quantity > 1
+                                    ? () => updateQuantity(item.productId, item.quantity - 1)
+                                    : null,
+                              ),
+                              Text('${item.quantity}'),
+                              IconButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () => updateQuantity(item.productId, item.quantity + 1),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => removeFromCart(item.productId),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: cart.items.isEmpty
+                      ? null
+                      : () => Navigator.pushNamed(context, '/checkout'),
+                  child: Text('Checkout'),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Subtotal: \$${cart.subtotal.toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            );
+          }
+          return Center(child: Text('No data'));
+        },
+      ),
     );
   }
 }

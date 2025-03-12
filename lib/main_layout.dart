@@ -9,6 +9,7 @@ import 'package:flutter_application_app/cart_page.dart';
 import 'package:flutter_application_app/checkout_page.dart';
 import 'package:flutter_application_app/login_page.dart';
 import 'package:flutter_application_app/signup_page.dart';
+import 'package:flutter_application_app/services/cart_service.dart'; // Import CartService
 
 class MainLayout extends StatefulWidget {
   @override
@@ -17,6 +18,31 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
+  int cartItemCount = 0; // Theo dõi số lượng sản phẩm trong giỏ
+  final CartService cartService = CartService(); // Khởi tạo CartService
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCartCount(); // Tải số lượng khi khởi động
+  }
+
+  // Tải số lượng từ giỏ hàng
+  Future<void> _loadCartCount() async {
+    try {
+      final cart = await cartService.getCart();
+      setState(() {
+        cartItemCount = cart.items.fold(0, (sum, item) => sum + item.quantity);
+      });
+    } catch (e) {
+      print('Error loading cart count: $e');
+    }
+  }
+
+  // Cập nhật số lượng khi giỏ hàng thay đổi
+  void _updateCartCount() {
+    _loadCartCount();
+  }
 
   static final List<Widget> _pages = <Widget>[
     HomePage(),
@@ -24,7 +50,7 @@ class _MainLayoutState extends State<MainLayout> {
     AboutPage(),
     BlogPage(),
     ContactPage(),
-    CartPage(),
+    CartPage(onCartUpdated: () {}), // Sử dụng CartPage với onCartUpdated mặc định
     CheckoutPage(),
     LoginPage(),
     SignupPage(),
@@ -48,11 +74,64 @@ class _MainLayoutState extends State<MainLayout> {
     });
   }
 
+  void _showCartBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16),
+        height: 300,
+        child: Column(
+          children: [
+            Text('Your Cart', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildCartItem('Bacardi 151', '\$25.99', 'images/prod-1.jpg'),
+                  _buildCartItem('Jim Beam Kentucky Straight', '\$30.89', 'images/prod-2.jpg'),
+                  _buildCartItem('Citadelle', '\$22.50', 'images/prod-3.jpg'),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartPage(onCartUpdated: _updateCartCount),
+                  ),
+                );
+              },
+              child: Text('View Cart'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartItem(String name, String price, String imagePath) {
+    return ListTile(
+      leading: Image.asset(
+        imagePath,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.broken_image, size: 50);
+        },
+      ),
+      title: Text(name),
+      subtitle: Text(price),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
         title: _titles[_selectedIndex],
+        cartItemCount: cartItemCount,
         onCartPressed: () => _showCartBottomSheet(context),
       ),
       body: IndexedStack(
@@ -158,59 +237,17 @@ class _MainLayoutState extends State<MainLayout> {
               title: Text('Cart'),
               onTap: () {
                 Navigator.pop(context);
-                _onItemTapped(5);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartPage(onCartUpdated: _updateCartCount),
+                  ),
+                );
               },
             ),
           ],
         ),
       ),
-    );
-  }
-
-  void _showCartBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(16),
-        height: 300,
-        child: Column(
-          children: [
-            Text('Your Cart', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildCartItem('Bacardi 151', '\$25.99', 'images/prod-1.jpg'),
-                  _buildCartItem('Jim Beam Kentucky Straight', '\$30.89', 'images/prod-2.jpg'),
-                  _buildCartItem('Citadelle', '\$22.50', 'images/prod-3.jpg'),
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _onItemTapped(5);
-              },
-              child: Text('View Cart'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCartItem(String name, String price, String imagePath) {
-    return ListTile(
-      leading: Image.asset(
-        imagePath,
-        width: 50,
-        height: 50,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.broken_image, size: 50);
-        },
-      ),
-      title: Text(name),
-      subtitle: Text(price),
     );
   }
 }

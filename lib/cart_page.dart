@@ -3,6 +3,9 @@ import 'package:flutter_application_app/models/cart.dart';
 import 'package:flutter_application_app/services/cart_service.dart';
 
 class CartPage extends StatefulWidget {
+  final VoidCallback? onCartUpdated; // Thay required bằng nullable
+  const CartPage({Key? key, this.onCartUpdated}) : super(key: key);
+
   @override
   _CartPageState createState() => _CartPageState();
 }
@@ -21,6 +24,8 @@ class _CartPageState extends State<CartPage> {
     setState(() {
       futureCart = cartService.getCart();
     });
+    // Gọi onCartUpdated nếu nó không null
+    widget.onCartUpdated?.call();
   }
 
   void updateQuantity(String productId, int newQuantity) async {
@@ -63,7 +68,7 @@ class _CartPageState extends State<CartPage> {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final cart = snapshot.data!;
-            print('Cart items: ${cart.items.map((item) => item.name).join(', ')}'); // Debug
+            print('Cart items: ${cart.items.map((item) => item.name).join(', ')}');
             return ListView(
               padding: EdgeInsets.all(16),
               children: [
@@ -75,7 +80,7 @@ class _CartPageState extends State<CartPage> {
                 if (cart.items.isEmpty)
                   Center(child: Text('Your cart is empty')),
                 ...cart.items.map((item) {
-                  print('Image URL for ${item.name}: ${item.image}'); // Debug URL
+                  print('Image URL for ${item.name}: ${item.image}');
                   return Card(
                     elevation: 2,
                     margin: EdgeInsets.symmetric(vertical: 8),
@@ -88,12 +93,12 @@ class _CartPageState extends State<CartPage> {
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
-                            return Center(child: CircularProgressIndicator()); // Hiển thị khi tải
+                            return Center(child: CircularProgressIndicator());
                           },
                           errorBuilder: (context, error, stackTrace) {
-                            print('Error loading image for ${item.name}: $error'); // Log lỗi chi tiết
+                            print('Error loading image for ${item.name}: $error');
                             return Image.asset(
-                              'assets/placeholder.jpg', // Thêm hình ảnh mặc định từ assets
+                              'assets/placeholder.jpg',
                               fit: BoxFit.cover,
                               width: 50,
                               height: 50,

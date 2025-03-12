@@ -3,7 +3,8 @@ import 'package:flutter_application_app/models/cart.dart';
 import 'package:http/http.dart' as http;
 
 class CartService {
-  static const String baseUrl = 'http://localhost:3000';
+  // static const String baseUrl = 'http://localhost:3000';
+    static const String baseUrl = 'https://nodejs-ck-x8q8.onrender.com';
 
   Future<void> addToCart(String productId, int quantity) async {
     try {

@@ -63,6 +63,7 @@ class _CartPageState extends State<CartPage> {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             final cart = snapshot.data!;
+            print('Cart items: ${cart.items.map((item) => item.name).join(', ')}'); // Debug
             return ListView(
               padding: EdgeInsets.all(16),
               children: [
@@ -74,6 +75,7 @@ class _CartPageState extends State<CartPage> {
                 if (cart.items.isEmpty)
                   Center(child: Text('Your cart is empty')),
                 ...cart.items.map((item) {
+                  print('Image URL for ${item.name}: ${item.image}'); // Debug URL
                   return Card(
                     elevation: 2,
                     margin: EdgeInsets.symmetric(vertical: 8),
@@ -84,10 +86,17 @@ class _CartPageState extends State<CartPage> {
                         child: Image.network(
                           item.image,
                           fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(child: CircularProgressIndicator()); // Hiển thị khi tải
+                          },
                           errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: Icon(Icons.broken_image),
+                            print('Error loading image for ${item.name}: $error'); // Log lỗi chi tiết
+                            return Image.asset(
+                              'assets/placeholder.jpg', // Thêm hình ảnh mặc định từ assets
+                              fit: BoxFit.cover,
+                              width: 50,
+                              height: 50,
                             );
                           },
                         ),

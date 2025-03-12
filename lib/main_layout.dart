@@ -9,7 +9,8 @@ import 'package:flutter_application_app/cart_page.dart';
 import 'package:flutter_application_app/checkout_page.dart';
 import 'package:flutter_application_app/login_page.dart';
 import 'package:flutter_application_app/signup_page.dart';
-import 'package:flutter_application_app/services/cart_service.dart'; // Import CartService
+import 'package:flutter_application_app/services/auth_service.dart';
+import 'package:flutter_application_app/services/cart_service.dart';
 
 class MainLayout extends StatefulWidget {
   @override
@@ -18,16 +19,24 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
-  int cartItemCount = 0; // Theo dõi số lượng sản phẩm trong giỏ
-  final CartService cartService = CartService(); // Khởi tạo CartService
+  int cartItemCount = 0;
+  final CartService cartService = CartService();
+  Map<String, dynamic>? _user;
 
   @override
   void initState() {
     super.initState();
-    _loadCartCount(); // Tải số lượng khi khởi động
+    _loadCartCount();
+    _loadUser();
   }
 
-  // Tải số lượng từ giỏ hàng
+  Future<void> _loadUser() async {
+    final user = await AuthService.getCurrentUser();
+    setState(() {
+      _user = user;
+    });
+  }
+
   Future<void> _loadCartCount() async {
     try {
       final cart = await cartService.getCart();
@@ -39,34 +48,9 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
-  // Cập nhật số lượng khi giỏ hàng thay đổi
   void _updateCartCount() {
     _loadCartCount();
   }
-
-  static final List<Widget> _pages = <Widget>[
-    HomePage(),
-    ProductsPage(),
-    AboutPage(),
-    BlogPage(),
-    ContactPage(),
-    CartPage(onCartUpdated: () {}), // Sử dụng CartPage với onCartUpdated mặc định
-    CheckoutPage(),
-    LoginPage(),
-    SignupPage(),
-  ];
-
-  static const List<String> _titles = [
-    'Home',
-    'Products',
-    'About',
-    'Blog',
-    'Contact',
-    'Cart',
-    'Checkout',
-    'Login',
-    'Sign Up',
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -74,68 +58,55 @@ class _MainLayoutState extends State<MainLayout> {
     });
   }
 
-  void _showCartBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(16),
-        height: 300,
-        child: Column(
-          children: [
-            Text('Your Cart', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildCartItem("Hello Team Tester 2","ĐẠI HỌC ĐÔNG Á <3","2025"),
-                 
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CartPage(onCartUpdated: _updateCartCount),
-                  ),
-                );
-              },
-              child: Text('View Cart'),
-            ),
-          ],
-        ),
+  void _navigateToCart(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CartPage(onCartUpdated: _updateCartCount),
       ),
     );
   }
 
-  Widget _buildCartItem(String name, String price, String imagePath) {
-    return ListTile(
-      leading: Image.asset(
-        imagePath,
-        width: 50,
-        height: 50,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.broken_image, size: 50);
-        },
-      ),
-      title: Text(name),
-      subtitle: Text(price),
-    );
+  Future<void> _logout() async {
+    await AuthService.logout();
+    setState(() {
+      _user = null;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: _titles[_selectedIndex],
+        title: [
+          'Home',
+          'Products',
+          'About',
+          'Blog',
+          'Contact',
+          'Cart',
+          'Checkout',
+          'Login',
+          'Sign Up',
+        ][_selectedIndex],
         cartItemCount: cartItemCount,
-        onCartPressed: () => _showCartBottomSheet(context),
+        onCartPressed: _navigateToCart,
+        user: _user,
+        onLogout: _logout,
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: _pages,
+        children: [
+          HomePage(),
+          ProductsPage(),
+          AboutPage(),
+          BlogPage(),
+          ContactPage(),
+          CartPage(onCartUpdated: _updateCartCount),
+          CheckoutPage(),
+          LoginPage(),
+          SignupPage(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -175,6 +146,12 @@ class _MainLayoutState extends State<MainLayout> {
                 ],
               ),
             ),
+            if (_user != null)
+              ListTile(
+                leading: Icon(Icons.person),
+                title: Text(_user!['name']),
+                onTap: () {},
+              ),
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Home'),
@@ -231,6 +208,15 @@ class _MainLayoutState extends State<MainLayout> {
                 _onItemTapped(8);
               },
             ),
+            if (_user != null)
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Logout'),
+                onTap: () async {
+                  await _logout();
+                  Navigator.pop(context);
+                },
+              ),
             ListTile(
               leading: Icon(Icons.shopping_cart),
               title: Text('Cart'),

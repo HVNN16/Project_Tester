@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_app/main_layout.dart';
+import 'package:flutter_application_app/login_page.dart';
+import 'package:flutter_application_app/signup_page.dart';
 
 void main() {
-  runApp(LiquorStoreApp());
+  runApp(MyApp());
 }
 
-class LiquorStoreApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,9 +15,13 @@ class LiquorStoreApp extends StatelessWidget {
       title: 'Liquor Store',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'Spectral',
       ),
-      home: MainLayout(),
+      initialRoute: '/main', // Bắt đầu từ MainLayout
+      routes: {
+        '/login': (context) => LoginPage(),
+        '/signup': (context) => SignupPage(),
+        '/main': (context) => MainLayout(),
+      },
     );
   }
 }

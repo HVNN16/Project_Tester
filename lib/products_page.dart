@@ -162,7 +162,9 @@ class ProductsPage extends StatefulWidget {
 class _ProductsPageState extends State<ProductsPage> {
   late Future<List<Map<String, dynamic>>> futureProducts;
   final CartService cartService = CartService();
-  static const String baseUrl = 'http://localhost:3000'; // Giữ nguyên hoặc thay đổi nếu cần
+  // static const String baseUrl = 'http://localhost:3000'; // Giữ nguyên hoặc thay đổi nếu cần
+  static const String baseUrl = 'https://nodejs-ck-x8q8.onrender.com';
+
 
   Future<List<Map<String, dynamic>>> fetchProducts() async {
     try {

@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import '../models/product.dart';
 
 class ProductService {
-  static const String baseUrl = 'https://nodejs-ck-x8q8.onrender.com';
+  // static const String baseUrl = 'https://nodejs-ck-x8q8.onrender.com';
+    static const String baseUrl = 'http://localhost:3000';
 
   Future<List<Product>> getProducts() async {
     try {
